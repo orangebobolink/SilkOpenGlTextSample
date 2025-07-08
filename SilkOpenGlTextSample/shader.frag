@@ -3,13 +3,13 @@ in vec3 fragColor;
 in vec2 texCoord;
 
 uniform sampler2D glyphTexture;
-uniform int isTextured;
+uniform bool isTextured;
 
 out vec4 FragColor;
 
 void main()
 {
-    if (isTextured == 1)
+    if (isTextured)
     {
         float alpha = texture(glyphTexture, texCoord).a;
         FragColor = vec4(fragColor, alpha);
