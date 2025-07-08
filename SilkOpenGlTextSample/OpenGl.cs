@@ -237,7 +237,7 @@ public class OpenGl
         library.Dispose();
     }
 
-    private void RenderText(
+    private unsafe void RenderText(
         string text,
         float x,
         float y,
@@ -271,33 +271,33 @@ public class OpenGl
 
             _gl.BindBuffer(BufferTargetARB.ArrayBuffer, _vboLabelId);
 
-            unsafe
+
+            fixed (void* ptr = charVertices)
             {
-                fixed (float* ptr = charVertices)
-                {
-                    _gl.BufferSubData(BufferTargetARB.ArrayBuffer, 0,
-                        (nuint)(charVertices.Length * sizeof(float)),
-                        ptr);
-                }
+                _gl.BufferData(BufferTargetARB.ArrayBuffer,
+                    (nuint)(charVertices.Length * sizeof(float)),
+                    ptr,
+                    BufferUsageARB.StreamDraw);
             }
+
 
             _gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, _eboLabelId);
 
-            unsafe
+
+            fixed (void* indicesPtr = indices)
             {
-                fixed (uint* indicesPtr = indices)
-                {
-                    _gl.BufferData(BufferTargetARB.ElementArrayBuffer,
-                        (nuint)indices.Length * sizeof(uint),
-                        indicesPtr,
-                        BufferUsageARB.StreamDraw);
-                }
+                _gl.BufferData(BufferTargetARB.ElementArrayBuffer,
+                    (nuint)indices.Length * sizeof(uint),
+                    indicesPtr,
+                    BufferUsageARB.StreamDraw);
             }
+
 
             _gl.ActiveTexture(TextureUnit.Texture0);
             _gl.BindTexture(TextureTarget.Texture2D, _glCharacters[c].TextureId);
-            _gl.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
-            x += _glCharacters[c].Advance * scale;
+            _gl.DrawElements(PrimitiveType.Triangles, (uint)indices.Length,
+                DrawElementsType.UnsignedInt, null);
+            x += (_glCharacters[c].Advance >> 6) * scale;
             _gl.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
         }
 
