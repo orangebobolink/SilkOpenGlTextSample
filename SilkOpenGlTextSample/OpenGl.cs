@@ -169,10 +169,13 @@ public class OpenGl
         _gl.DrawArrays(PrimitiveType.Lines, 0, (uint)_gridLines.Length / 6);
         _gl.Uniform1(_shader.GetUniformLocation("isTextured"), 1);
 
-        RenderText("0", 1.05f, -0.1f, 0.95f, 0.6f, 0.6f, 0.6f, 0.02f);
-        RenderText("pix", 1.05f, -0.1f, 0.0f, 0.6f, 0.6f, 0.6f, 0.02f);
-        RenderText("0", -0.95f, -0.1f, 1.05f, 0.6f, 0.6f, 0.6f, 0.02f);
-        RenderText("pix", 0.00f, -0.1f, 1.05f, 0.6f, 0.6f, 0.6f, 0.02f);
+        RenderText("0", 1.05f, -0.1f, 0.95f, 0.6f, 0.6f, 0.6f, 0.005f);
+        RenderText("pix", 1.05f, -0.1f, 0.0f, 0.6f, 0.6f, 0.6f, 0.005f);
+        RenderText("0", -0.95f, -0.1f, 1.05f, 0.6f, 0.6f, 0.6f, 0.005f);
+        RenderText("pix", 0.00f, -0.1f, 1.05f, 0.6f, 0.6f, 0.6f, 0.005f);
+        RenderText("-0.112", 1.05f, 0.00f, -1.05f, 0.6f, 0.6f, 0.6f, 0.005f);
+        RenderText("wave", 1.05f, 0.45f, -1.05f, 0.6f, 0.6f, 0.6f, 0.005f);
+        RenderText("+0.058", 1.05f, 0.95f, -1.05f, 0.6f, 0.6f, 0.6f, 0.005f);
     }
 
     private void OnFramebufferResize(Vector2D<int> newSize)
@@ -193,13 +196,21 @@ public class OpenGl
             face.LoadChar(tmpChar, LoadFlags.Render, LoadTarget.Normal);
 
             var texture = _gl.GenTexture();
-            _gl.ActiveTexture(TextureUnit.Texture0);
             _gl.BindTexture(TextureTarget.Texture2D, texture);
 
             _gl.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.R8,
                 (uint)face.Glyph.Bitmap.Width,
                 (uint)face.Glyph.Bitmap.Rows, 0, PixelFormat.Red, PixelType.UnsignedByte,
                 face.Glyph.Bitmap.Buffer);
+
+            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleR,
+                (int)GLEnum.One);
+            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleG,
+                (int)GLEnum.One);
+            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleB,
+                (int)GLEnum.One);
+            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleA,
+                (int)GLEnum.Red);
 
             _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter,
                 (int)TextureMinFilter.Linear);
@@ -210,15 +221,6 @@ public class OpenGl
                 (int)TextureWrapMode.ClampToEdge);
             _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT,
                 (int)TextureWrapMode.ClampToEdge);
-
-            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleR,
-                (int)GLEnum.One);
-            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleG,
-                (int)GLEnum.One);
-            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleB,
-                (int)GLEnum.One);
-            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleA,
-                (int)GLEnum.Red);
 
             var charGl = new CharacterGl
             {
@@ -297,7 +299,7 @@ public class OpenGl
             _gl.BindTexture(TextureTarget.Texture2D, _glCharacters[c].TextureId);
             _gl.DrawElements(PrimitiveType.Triangles, (uint)indices.Length,
                 DrawElementsType.UnsignedInt, null);
-            x += _glCharacters[c].Advance  * scale;
+            x += _glCharacters[c].Advance * scale;
             _gl.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
         }
 
