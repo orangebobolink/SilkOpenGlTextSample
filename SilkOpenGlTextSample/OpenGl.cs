@@ -75,7 +75,7 @@ public class OpenGl
 
         _gl = _window.CreateOpenGL();
 
-        FontTextureGeneration("C:/Windows/Fonts/arial.ttf", 20);
+        FontTextureGeneration("Jost.ttf", 20);
 
         _gridLines = GridLineGeneration(1.0f, 10)
             .ToArray();

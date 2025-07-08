@@ -20,6 +20,9 @@
         <None Update="shader.frag">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+        <None Update="Jost.ttf">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
         <None Update="shader.vert">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
