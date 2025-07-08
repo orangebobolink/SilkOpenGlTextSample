@@ -133,8 +133,8 @@ public class OpenGl
         _gl.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         _gl.ClearStencil(0);
         _gl.ClearDepth(1.0f);
-        _gl.DepthFunc(DepthFunction.Lequal);
-        _gl.Enable(EnableCap.DepthTest);
+        // _gl.DepthFunc(DepthFunction.Lequal);
+        // _gl.Enable(EnableCap.DepthTest);
         _gl.Enable(EnableCap.Blend);
         _gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
     }
@@ -169,10 +169,10 @@ public class OpenGl
         _gl.DrawArrays(PrimitiveType.Lines, 0, (uint)_gridLines.Length / 6);
         _gl.Uniform1(_shader.GetUniformLocation("isTextured"), 1);
 
-        RenderText("0", 1.05f, -0.1f, 0.95f, 1f, 0.6f, 0.6f, 0.005f);
-        RenderText("pix", 1.05f, -0.1f, 0.0f, 1f, 0.6f, 0.6f, 0.05f);
-        RenderText("0", -0.95f, -0.1f, 1.05f, 1f, 0.6f, 0.6f, 0.02f);
-        RenderText("pix", 0.00f, -0.1f, 1.05f, 1f, 0.6f, 0.6f, 0.02f);
+        RenderText("0", 1.05f, -0.1f, 0.95f, 0.6f, 0.6f, 0.6f, 0.02f);
+        RenderText("pix", 1.05f, -0.1f, 0.0f, 0.6f, 0.6f, 0.6f, 0.02f);
+        RenderText("0", -0.95f, -0.1f, 1.05f, 0.6f, 0.6f, 0.6f, 0.02f);
+        RenderText("pix", 0.00f, -0.1f, 1.05f, 0.6f, 0.6f, 0.6f, 0.02f);
     }
 
     private void OnFramebufferResize(Vector2D<int> newSize)
@@ -297,7 +297,7 @@ public class OpenGl
             _gl.BindTexture(TextureTarget.Texture2D, _glCharacters[c].TextureId);
             _gl.DrawElements(PrimitiveType.Triangles, (uint)indices.Length,
                 DrawElementsType.UnsignedInt, null);
-            x += (_glCharacters[c].Advance >> 6) * scale;
+            x += _glCharacters[c].Advance  * scale;
             _gl.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
         }
 

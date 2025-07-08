@@ -11,7 +11,7 @@ void main()
 {
     if (isTextured == 1)
     {
-        float alpha = texture(glyphTexture, texCoord).r;
+        float alpha = texture(glyphTexture, texCoord).a;
         FragColor = vec4(fragColor, alpha);
     }
     else
