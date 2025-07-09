@@ -186,7 +186,7 @@ public class OpenGl
         _shader.SetMatrix4X4("projection", projection);
     }
 
-    private void FontTextureGeneration(string fontPath, uint fontSize)
+    private unsafe void FontTextureGeneration(string fontPath, uint fontSize)
     {
         var library = new Library();
         var face = new Face(library, fontPath);
@@ -195,47 +195,57 @@ public class OpenGl
 
         for (byte i = 0; i < CharsetLength; i++)
         {
-            var tmpChar = (char)i;
-            face.LoadChar(tmpChar, LoadFlags.Render, LoadTarget.Normal);
-
-            var texture = _gl.GenTexture();
-            _gl.BindTexture(TextureTarget.Texture2D, texture);
-
-            _gl.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.R8,
-                (uint)face.Glyph.Bitmap.Width,
-                (uint)face.Glyph.Bitmap.Rows, 0, PixelFormat.Red, PixelType.UnsignedByte,
-                face.Glyph.Bitmap.Buffer);
-
-            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleR,
-                (int)GLEnum.One);
-            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleG,
-                (int)GLEnum.One);
-            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleB,
-                (int)GLEnum.One);
-            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleA,
-                (int)GLEnum.Red);
-
-            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter,
-                (int)TextureMinFilter.Linear);
-            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter,
-                (int)TextureMagFilter.Linear);
-
-            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS,
-                (int)TextureWrapMode.ClampToEdge);
-            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT,
-                (int)TextureWrapMode.ClampToEdge);
-
-            var charGl = new CharacterGl
+            try
             {
-                TextureId = texture,
-                Width = face.Glyph.Bitmap.Width,
-                Height = face.Glyph.Bitmap.Rows,
-                ShiftLeft = face.Glyph.BitmapLeft,
-                ShiftTop = face.Glyph.BitmapTop,
-                Advance = face.Glyph.Advance.X.ToInt32()
-            };
+                var tmpChar = (char)i;
+                face.LoadChar(tmpChar, LoadFlags.Render, LoadTarget.Normal);
 
-            _glCharacters.Add(tmpChar, charGl);
+                var texture = _gl.GenTexture();
+                _gl.BindTexture(TextureTarget.Texture2D, texture);
+
+                fixed (void* ptr = face.Glyph.Bitmap.BufferData)
+                {
+                    _gl.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.R8,
+                        (uint)face.Glyph.Bitmap.Width,
+                        (uint)face.Glyph.Bitmap.Rows, 0, PixelFormat.Red, PixelType.UnsignedByte,
+                        ptr);
+                }
+
+                _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleR,
+                    (int)GLEnum.One);
+                _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleG,
+                    (int)GLEnum.One);
+                _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleB,
+                    (int)GLEnum.One);
+                _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleA,
+                    (int)GLEnum.Red);
+
+                _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter,
+                    (int)TextureMinFilter.Linear);
+                _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter,
+                    (int)TextureMagFilter.Linear);
+
+                _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS,
+                    (int)TextureWrapMode.ClampToEdge);
+                _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT,
+                    (int)TextureWrapMode.ClampToEdge);
+
+                var charGl = new CharacterGl
+                {
+                    TextureId = texture,
+                    Width = face.Glyph.Bitmap.Width,
+                    Height = face.Glyph.Bitmap.Rows,
+                    ShiftLeft = face.Glyph.BitmapLeft,
+                    ShiftTop = face.Glyph.BitmapTop,
+                    Advance = face.Glyph.Advance.X.ToInt32()
+                };
+
+                _glCharacters.Add(tmpChar, charGl);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
 
         face.Dispose();
@@ -345,7 +355,9 @@ public class OpenGl
 
         //axis
         gridVertices.AddRange([fillPercent, 0f, -fillPercent, 0f, 1f, 0f]); // Y GREEN
-        gridVertices.AddRange([fillPercent, fillPercent, -fillPercent, 0f, 1f, 0f]); // Y GREEN    
+        gridVertices.AddRange([
+            fillPercent, fillPercent, -fillPercent, 0f, 1f, 0f
+        ]); // Y GREEN    
 
         gridVertices.AddRange([-fillPercent, 0f, -fillPercent, 1f, 0f, 0f]); // X RED
         gridVertices.AddRange([fillPercent, 0f, -fillPercent, 1f, 0f, 0f]); // X RED
