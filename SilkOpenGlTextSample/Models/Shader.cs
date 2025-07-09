@@ -28,7 +28,7 @@ public sealed class Shader : IDisposable
         _gl.LinkProgram(_handle);
 
         // Check if linking was successful
-        _gl.GetProgram(_handle, GLEnum.LinkStatus, out int status);
+        _gl.GetProgram(_handle, GLEnum.LinkStatus, out var status);
 
         if (status == 0)
             throw new GlErrorException(

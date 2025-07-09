@@ -55,6 +55,7 @@ public class OpenGl
         _window.Load += OnLoad;
         _window.Render += OnRender;
         _window.FramebufferResize += OnFramebufferResize;
+        _window.Update += OnUpdateFrame;
 
         _window.Run();
 
@@ -141,29 +142,12 @@ public class OpenGl
 
     private void OnRender(double dt)
     {
-        _gl.Viewport(_window!.Size);
-
         _gl.Clear(ClearBufferMask.ColorBufferBit
                   | ClearBufferMask.DepthBufferBit
                   | ClearBufferMask.StencilBufferBit);
 
         _shader!.Use();
 
-        var projection = Matrix4x4.CreatePerspectiveFieldOfView(
-            MathF.PI / 4,
-            (float)800 / 600, 0.1f, 100f);
-
-        var view = Matrix4x4.CreateLookAt(new Vector3(0, 0, _zoom), Vector3.Zero, Vector3.UnitY);
-
-        var model = Matrix4x4.CreateRotationZ(MathHelper.ToRadians(_roll))
-                    * Matrix4x4.CreateRotationX(MathHelper.ToRadians(_pitch))
-                    * Matrix4x4.CreateRotationY(MathHelper.ToRadians(_yaw));
-
-        _shader.SetMatrix4X4("model", model);
-        _shader.SetMatrix4X4("view", view);
-        _shader.SetMatrix4X4("projection", projection);
-
-        _gl.LineWidth(1.0f);
         _gl.Uniform1(_shader.GetUniformLocation("isTextured"), 0);
         _vaoGrid?.Bind();
         _gl.DrawArrays(PrimitiveType.Lines, 0, (uint)_gridLines.Length / 6);
@@ -181,6 +165,25 @@ public class OpenGl
     private void OnFramebufferResize(Vector2D<int> newSize)
     {
         _gl.Viewport(newSize);
+    }
+
+    private void OnUpdateFrame(double dt)
+    {
+        _shader!.Use();
+
+        var projection = Matrix4x4.CreatePerspectiveFieldOfView(
+            MathF.PI / 4,
+            (float)800 / 600, 0.1f, 100f);
+
+        var view = Matrix4x4.CreateLookAt(new Vector3(0, 0, _zoom), Vector3.Zero, Vector3.UnitY);
+
+        var model = Matrix4x4.CreateRotationZ(MathHelper.ToRadians(_roll))
+                    * Matrix4x4.CreateRotationX(MathHelper.ToRadians(_pitch))
+                    * Matrix4x4.CreateRotationY(MathHelper.ToRadians(_yaw));
+
+        _shader.SetMatrix4X4("model", model);
+        _shader.SetMatrix4X4("view", view);
+        _shader.SetMatrix4X4("projection", projection);
     }
 
     private void FontTextureGeneration(string fontPath, uint fontSize)
@@ -282,20 +285,16 @@ public class OpenGl
                     BufferUsageARB.StreamDraw);
             }
 
-
             _gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, _eboLabelId);
-
 
             fixed (void* indicesPtr = indices)
             {
                 _gl.BufferData(BufferTargetARB.ElementArrayBuffer,
-                    (nuint)indices.Length * sizeof(uint),
+                    (nuint)(indices.Length * sizeof(uint)),
                     indicesPtr,
                     BufferUsageARB.StreamDraw);
             }
 
-
-            _gl.ActiveTexture(TextureUnit.Texture0);
             _gl.BindTexture(TextureTarget.Texture2D, _glCharacters[c].TextureId);
             _gl.DrawElements(PrimitiveType.Triangles, (uint)indices.Length,
                 DrawElementsType.UnsignedInt, null);
